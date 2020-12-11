@@ -16,10 +16,18 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLOutput;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 
@@ -34,9 +42,11 @@ public class JavaHTTPServer implements Runnable{
 	static final String METHOD_NOT_SUPPORTED = "not_supported.html";
         static final String JSON = "puntiVendita.json";
         static final String XML = "puntiVendita.xml";
+        static final String DB_JSON = "database.json";
+        static final String DB_XML = "database.xml";
         
 	// port to listen connection
-	static final int PORT = 8080;
+	static final int PORT = 3000;
 	
 	// verbose mode
 	static final boolean verbose = true;
@@ -125,11 +135,16 @@ public class JavaHTTPServer implements Runnable{
                                 boolean moved=false;
                                 File filetmp;
                                 String strTMP;
-				if (fileRequested.endsWith("/")) {//controllo
+                                if (!fileRequested.endsWith("/") && !fileRequested.endsWith(".html") && !fileRequested.endsWith(".json") && !fileRequested.endsWith(".xml") ) {//controllo
+					fileRequested += "/";
+                                        
+				}
+				if (fileRequested.endsWith("/") && !fileRequested.endsWith("xml/") && !fileRequested.endsWith("json/") ) {//controllo
 					fileRequested += DEFAULT_FILE;
+                                        
 				}
                                 
-                                if(!fileRequested.endsWith(".html") && !fileRequested.endsWith("/") && !fileRequested.endsWith(".json"))
+                                if(!fileRequested.endsWith(".html") && !fileRequested.endsWith("/") && !fileRequested.endsWith(".json") && !fileRequested.endsWith(".xml"))
                                 {
                                     String fileRequestedTMP;
                                     fileRequestedTMP = fileRequested+".html";
@@ -140,6 +155,7 @@ public class JavaHTTPServer implements Runnable{
                                 
                                 
                                 }
+                                
                                 if(fileRequested.endsWith(".json") || fileRequested.endsWith(".xml"))
                                 {
                                     
@@ -162,14 +178,29 @@ public class JavaHTTPServer implements Runnable{
                                         ObjectMapper objectMapper = new ObjectMapper();
                                         
                                         PuntiVendita pv = objectMapper.readValue(new File(WEB_ROOT+"/"+JSON), PuntiVendita.class);//deserializzazione 
-                                        XmlMapper xmlMapper = new XmlMapper();
-                                        xmlMapper.writeValue(new File(WEB_ROOT+"/"+XML),pv);
-                                        File file = new File(WEB_ROOT+"/"+XML);
+                                        objToXML(pv);
+                                    }
+                                }
+                                System.out.println("entrato fuori dal controllo 3/ request :"+fileRequested);
+                                if(fileRequested.endsWith("/db/xml/") || fileRequested.endsWith("/db/json/"))
+                                {
+                                    
+                                    System.out.println("entrato dento il controllo 3/ request :"+fileRequested);
+                                            
+                                    salvaDB("jdbc:mysql://127.0.0.1:3306/tpsit?user=root&password=Password&serverTimezone=Europe/Rome",fileRequested);
+                                    if(fileRequested.endsWith("/db/xml/"))
+                                    {
+                                        fileRequested += DB_XML;
+                                    }
+                                    else
+                                    {
+                                        fileRequested += DB_JSON;
                                     }
                                 }
 				
 				File file = new File(WEB_ROOT, fileRequested);
 				int fileLength = (int) file.length();
+                                System.out.println("file request: "+fileRequested);
 			        content = getContentType(fileRequested);
 				
 				if (method.equals("GET")) { // GET method so we return content
@@ -200,6 +231,7 @@ public class JavaHTTPServer implements Runnable{
                                             dataOut.flush();
                                         }
 				}
+                                
 				
 				if (verbose) {
 					System.out.println("File " + fileRequested + " of type " + content + " returned");
@@ -309,7 +341,103 @@ public class JavaHTTPServer implements Runnable{
                 
             return false;
         }
-	
+        
+        private void objToXML(Object obj)
+        {
+            if(!obj.getClass().getName().endsWith("PuntiVendita"))
+            {
+                try {
+                    XmlMapper xmlMapper = new XmlMapper();
+                    xmlMapper.writeValue(new File(WEB_ROOT+"/db/xml/"+XML),obj);
+                    File file = new File(WEB_ROOT+"/db/xml/"+XML);
+                } catch (IOException ex) {
+                    Logger.getLogger(JavaHTTPServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            else
+            {
+                try {
+                    XmlMapper xmlMapper = new XmlMapper();
+                    xmlMapper.writeValue(new File(WEB_ROOT+"/"+XML),obj);
+                    File file = new File(WEB_ROOT+"/"+XML);
+                } catch (IOException ex) {
+                    Logger.getLogger(JavaHTTPServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            
+        }
+        
+        private void salvaDB(String db,String request)
+        {
+            
+            String urlMyDB = db;
+            try 
+            {
+            
+            try {
+                
+                Class.forName("com.mysql.jdbc.Driver");
+            
+                String content;
+                Connection connessione =DriverManager.getConnection(urlMyDB);
+                
+                
+                Statement statemant = connessione.createStatement();
+                
+                ResultSet resultset = statemant.executeQuery("SELECT Studenti.* FROM Studenti");
+                
+                System.out.println("connesso al database");
+                
+                Studenti studenti= new Studenti();        
+                while(resultset.next())
+                {
+                    Studente s = new Studente(resultset.getString(3),resultset.getString(2),resultset.getInt(1));
+                    studenti.add(s);
+                    
+                    
+                    
+                }
+                
+                
+                if(request.endsWith("/db/xml/"))
+                {
+                    
+                    XmlMapper xml = new XmlMapper();
+                    try {
+                        xml.writeValue(new File(WEB_ROOT + "/db/xml/" + DB_XML), studenti);
+                    } catch (IOException ex) {
+                        Logger.getLogger(JavaHTTPServer.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    File file = new File(WEB_ROOT + "/" + DB_XML);
+                }
+                if(request.endsWith("/db/json/"))
+                {
+                    
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    try {
+                        objectMapper.writeValue(new File(WEB_ROOT + "/db/json/" + DB_JSON), studenti);
+                    } catch (IOException ex) {
+                        Logger.getLogger(JavaHTTPServer.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    File file = new File(WEB_ROOT + "/" + DB_JSON);
+                }
+                        
+                
+                
+            } catch (SQLException ex) {
+                
+                Logger.getLogger(JavaHTTPServer.class.getName()).log(Level.SEVERE, null, ex);
+                
+            }
+        }
+        catch(ClassNotFoundException e)
+        {
+            
+                    
+        }
+        }
+        
+        
 	private void fileNotFound(PrintWriter out, OutputStream dataOut, String fileRequested) throws IOException {
 		File file = new File(WEB_ROOT, FILE_NOT_FOUND);
 		int fileLength = (int) file.length();
