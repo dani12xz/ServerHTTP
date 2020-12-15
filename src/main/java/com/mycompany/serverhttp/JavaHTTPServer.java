@@ -165,15 +165,7 @@ public class JavaHTTPServer implements Runnable{
                                         String path = "./files/"+fileRequested;
                                         
 
-                                            try {
-
-                                                //il file Json in una stringa
-                                                content = Files.readString(Paths.get(path));
-                                                
-
-                                            } catch (IOException e) {
-                                                e.printStackTrace();
-                                            }
+                                            
                                            
                                         ObjectMapper objectMapper = new ObjectMapper();
                                         
