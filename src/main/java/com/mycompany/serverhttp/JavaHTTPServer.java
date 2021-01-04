@@ -35,8 +35,10 @@ import java.util.logging.Logger;
 
 
 public class JavaHTTPServer implements Runnable{ 
-	
-	static final File WEB_ROOT = new File("./files/");
+        static final String ROOTLOCALE="./files/";
+        static final String ROOTESTERNA="";
+	static final String ROOT = ROOTLOCALE;//CAMBIARE IN BASE DOVE AVVII IL PROGRAMMA
+	static final File WEB_ROOT = new File(ROOT);
 	static final String DEFAULT_FILE = "index.html";
 	static final String FILE_NOT_FOUND = "404.html";
 	static final String METHOD_NOT_SUPPORTED = "not_supported.html";
@@ -56,6 +58,7 @@ public class JavaHTTPServer implements Runnable{
 	
 	public JavaHTTPServer(Socket c) {
 		connect = c;
+                
 	}
 	
 	public static void main(String[] args) {
@@ -173,11 +176,11 @@ public class JavaHTTPServer implements Runnable{
                                         objToXML(pv);
                                     }
                                 }
-                                System.out.println("entrato fuori dal controllo 3/ request :"+fileRequested);
+                                
                                 if(fileRequested.endsWith("/db/xml/") || fileRequested.endsWith("/db/json/"))
                                 {
                                     
-                                    System.out.println("entrato dento il controllo 3/ request :"+fileRequested);
+                                    System.out.println("request :"+fileRequested);
                                             
                                     salvaDB("jdbc:mysql://127.0.0.1:3306/tpsit?user=root&password=Password&serverTimezone=Europe/Rome",fileRequested);
                                     if(fileRequested.endsWith("/db/xml/"))
@@ -284,7 +287,7 @@ public class JavaHTTPServer implements Runnable{
         private boolean controlloEssistenzaFile(String fileD){
             
                 List<String> results = new ArrayList<String>();
-                File[] filesTMP = new File("./files/").listFiles();
+                File[] filesTMP = new File(ROOT).listFiles();
                 String[] StrTmp;
                 
                 for (File file : filesTMP) {
@@ -312,7 +315,7 @@ public class JavaHTTPServer implements Runnable{
         private boolean controlloEssistenzaCartella(String fileD){
             
             List<String> results = new ArrayList<String>();
-            String[] filesTMP =  new File("./files/").list();
+            String[] filesTMP =  new File(ROOT).list();
                 
             for(int i=0;i<filesTMP.length;i++)
             {
