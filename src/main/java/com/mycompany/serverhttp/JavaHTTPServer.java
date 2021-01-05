@@ -37,7 +37,7 @@ import java.util.logging.Logger;
 
 public class JavaHTTPServer implements Runnable{ 
         static final String ROOTLOCALE="./files/";
-        static final String ROOTESTERNA="";
+        static final String ROOTESTERNA="/home/cabox/workspace/ServerHTTP/files/";
 	static final String ROOT = ROOTLOCALE;//CAMBIARE IN BASE DOVE AVVII IL PROGRAMMA
 	static final File WEB_ROOT = new File(ROOT);
 	static final String DEFAULT_FILE = "index.html";
