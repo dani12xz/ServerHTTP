@@ -12,6 +12,7 @@ public class Studente {
     String nome;
     String cognome;
     int idStudente;
+    
 
     public Studente(String nome, String cognome, int idStudente) {
         this.nome = nome;
@@ -19,16 +20,8 @@ public class Studente {
         this.idStudente = idStudente;
     }
 
-   
 
    
-
-    
-    public Studente() {
-    }
-    
-
-  
     public String getNome() {
         return nome;
     }
@@ -53,10 +46,7 @@ public class Studente {
         this.idStudente = idStudente;
     }
 
-    @Override
-    public String toString() {
-        return "Studenti{" +  ", nome=" + nome + ", cognome=" + cognome + ", idStudente=" + idStudente + '}';
-    }
+   
 
     
 

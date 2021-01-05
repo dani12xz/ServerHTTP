@@ -194,8 +194,11 @@ public class JavaHTTPServer implements Runnable{
                                 }
 				
 				File file = new File(WEB_ROOT, fileRequested);
+                                // prende la lungheza del file 
 				int fileLength = (int) file.length();
+                                // out di controllo per la request 
                                 System.out.println("file request: "+fileRequested);
+                                
 			        content = getContentType(fileRequested);
 				
 				if (method.equals("GET")) { // GET method so we return content
@@ -280,8 +283,19 @@ public class JavaHTTPServer implements Runnable{
 	private String getContentType(String fileRequested) {
 		if (fileRequested.endsWith(".htm")  ||  fileRequested.endsWith(".html"))
 			return "text/html";
-		else
-			return "text/plain";
+                else if(fileRequested.endsWith("xml/"))
+                {
+                    return "text/xml";
+                }
+                else if(fileRequested.endsWith("json/"))
+                {
+                    return "text/json";
+                }
+                else
+                {
+                    return "text/plain";
+                }
+			
 	}
         
         private boolean controlloEssistenzaFile(String fileD){
@@ -383,16 +397,19 @@ public class JavaHTTPServer implements Runnable{
                 
                 System.out.println("connesso al database");
                 
-                Studenti studenti= new Studenti();        
-                while(resultset.next())
+                
+                ArrayList<Studente>studenti=new ArrayList<>();
+                while(resultset.next())//controllo di tutto sql
                 {
+                    //salvataggio dei dati di ogni riga 
                     Studente s = new Studente(resultset.getString(3),resultset.getString(2),resultset.getInt(1));
+                    //salvo la riga dentro un array
                     studenti.add(s);
                     
                     
                     
                 }
-                
+                System.out.println("Studenti salvati dentro array"+studenti.toString());
                 
                 if(request.endsWith("/db/xml/"))
                 {
