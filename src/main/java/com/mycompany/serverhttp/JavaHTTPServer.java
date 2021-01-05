@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -281,13 +282,16 @@ public class JavaHTTPServer implements Runnable{
 	
 	// return supported MIME Types
 	private String getContentType(String fileRequested) {
+            System.out.println("Richiesta content type"+fileRequested);
 		if (fileRequested.endsWith(".htm")  ||  fileRequested.endsWith(".html"))
-			return "text/html";
-                else if(fileRequested.endsWith("xml/"))
+                {
+                    return "text/html";
+                }
+                else if(fileRequested.endsWith(".xml"))
                 {
                     return "text/xml";
                 }
-                else if(fileRequested.endsWith("json/"))
+                else if(fileRequested.endsWith(".json"))
                 {
                     return "text/json";
                 }
@@ -413,6 +417,7 @@ public class JavaHTTPServer implements Runnable{
                 
                 if(request.endsWith("/db/xml/"))
                 {
+                    
                     
                     XmlMapper xml = new XmlMapper();
                     try {
